@@ -540,6 +540,14 @@ def get_local_time(ts):
         t = t.astimezone(to_zone)
     return t
 
+def was_last_month(ts, months=1):
+    t = get_local_time(ts)
+    return t.month == (datetime.now().month - months - 1)%12 + 1
+
+def show_date(ts):
+    t = get_local_time(ts)
+    return t.strftime("%m/%d/%Y") if t else None
+
 
 def show_local_time(ts):
     t = get_local_time(ts)
@@ -621,6 +629,8 @@ def main():
 
     parser.add_argument('--charging_schedule', help='Get charging schedule', required=False, action='store_true')
     parser.add_argument('--charge_sessions', help='Get charging sessions', required=False, action='store_true')
+    parser.add_argument('--charges_last_month', help='Get last months charging sessions', required=False, action='store_true')
+    parser.add_argument('--charges_2nd_month', help='Get 2 months ago charging sessions', required=False, action='store_true')
     parser.add_argument('--last_charge', help='Get last charge session', required=False, action='store_true')
     parser.add_argument('--charge_session', help='Get current charging session', required=False, action='store_true')
     parser.add_argument('--live_charging_session', help='Get live charging session', required=False, action='store_true')
@@ -1190,6 +1200,26 @@ def main():
             print(f"Enabled: {s['enabled']}")
             print(f"Weekdays: {s['weekDays']}")
 
+
+    if args.charges_2nd_month:
+        sessions = charging_sessions(args.verbose)
+        if args.last_charge:
+            sessions = [sessions[-1]]
+        print('Date, Energy Added')
+        for s in sessions:
+            if s['energy'] == 0 or s['vendor'] != 'Home' or not was_last_month(s['charge_start'], 2):
+                continue
+            print(f"{show_date(s['charge_start'])}, {s['energy']}")
+
+    if args.charges_last_month:
+        sessions = charging_sessions(args.verbose)
+        if args.last_charge:
+            sessions = [sessions[-1]]
+        print('Date, Energy Added')
+        for s in sessions:
+            if s['energy'] == 0 or s['vendor'] != 'Home' or not was_last_month(s['charge_start']):
+                continue
+            print(f"{show_date(s['charge_start'])}, {s['energy']}")
 
     if args.charge_sessions or args.last_charge or args.all:
         sessions = charging_sessions(args.verbose)
