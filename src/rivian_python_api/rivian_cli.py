@@ -542,7 +542,10 @@ def get_local_time(ts):
 
 def was_last_month(ts, months=1):
     t = get_local_time(ts)
-    return t.month == (datetime.now().month - months - 1)%12 + 1
+    months_ago = datetime.now()
+    for i in range(months):
+        months_ago = months_ago.replace(day=1) - timedelta(days=1)
+    return t.month == months_ago.month and t.year == months_ago.year
 
 def show_date(ts):
     t = get_local_time(ts)
