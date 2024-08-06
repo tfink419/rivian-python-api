@@ -1206,8 +1206,6 @@ def main():
     if args.charges_x_months_ago is not None or args.all:
         sessions = charging_sessions(args.verbose)
         months = args.charges_x_months_ago
-        if args.last_charge:
-            sessions = [sessions[-1]]
         print('Date, Energy Added')
         for s in sessions:
             if s['energy'] == 0 or s['vendor'] != 'Home' or not was_last_month(s['charge_start'], months):
